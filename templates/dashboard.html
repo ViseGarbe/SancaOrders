@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IoT Auth Dashboard</title>
+  <style>
+    :root {
+      --bg: #020617;
+      --panel: rgba(15, 23, 42, 0.72);
+      --panel-2: rgba(15, 23, 42, 0.92);
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #e5eefc;
+      --muted: #94a3b8;
+      --cyan: #22d3ee;
+      --cyan-soft: rgba(34, 211, 238, 0.12);
+      --green: #34d399;
+      --green-soft: rgba(52, 211, 153, 0.12);
+      --amber: #fbbf24;
+      --amber-soft: rgba(251, 191, 36, 0.12);
+      --violet: #a78bfa;
+      --violet-soft: rgba(167, 139, 250, 0.12);
+      --rose: #fb7185;
+      --rose-soft: rgba(251, 113, 133, 0.12);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --radius: 28px;
+      --radius-sm: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent 26%),
+        radial-gradient(circle at top right, rgba(167, 139, 250, 0.08), transparent 28%),
+        linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-end;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(34, 211, 238, 0.09);
+      color: #b6f3fb;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 14px 0 8px;
+      font-size: clamp(2rem, 4vw, 3.8rem);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .status-chips {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(130px, 1fr));
+      gap: 12px;
+      min-width: 320px;
+    }
+
+    .chip {
+      border-radius: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(16px);
+    }
+
+    .chip-label {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .chip-value {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .accent-emerald { color: #bbf7d0; background: var(--green-soft); border-color: rgba(52, 211, 153, 0.18); }
+    .accent-cyan { color: #cffafe; background: var(--cyan-soft); border-color: rgba(34, 211, 238, 0.18); }
+    .accent-amber { color: #fde68a; background: var(--amber-soft); border-color: rgba(251, 191, 36, 0.18); }
+    .accent-violet { color: #ddd6fe; background: var(--violet-soft); border-color: rgba(167, 139, 250, 0.18); }
+    .accent-rose { color: #fecdd3; background: var(--rose-soft); border-color: rgba(251, 113, 133, 0.18); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 24px;
+    }
+
+    .stack { display: flex; flex-direction: column; gap: 24px; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-kicker {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.1;
+    }
+
+    .section-text {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+      margin: 12px 0 0;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .split-half {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .inner-card {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      border-radius: 24px;
+      padding: 18px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.22s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #22d3ee, #60a5fa);
+      color: #06202a;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: white;
+      border: 1px solid var(--line);
+    }
+
+    .btn-success {
+      background: rgba(52, 211, 153, 0.12);
+      color: #bbf7d0;
+      border: 1px solid rgba(52, 211, 153, 0.18);
+    }
+
+    .logout-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(251, 113, 133, 0.12);
+    color: #fecdd3;
+    border: 1px solid rgba(251, 113, 133, 0.18);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    transition: 0.22s ease;
+  }
+
+  .logout-btn:hover {
+    transform: translateY(-1px);
+    background: rgba(251, 113, 133, 0.18);
+  }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      background: rgba(2,6,23,0.42);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .metric .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #64748b;
+    }
+
+    .metric .value {
+      margin-top: 8px;
+      font-size: 20px;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .metric .sub {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .info-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 15px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(2,6,23,0.38);
+    }
+
+    .info-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #d8e3f1;
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      box-shadow: 0 0 18px currentColor;
+    }
+
+    .phase-badge, .mini-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+    }
+
+    .phase-list { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+
+    .phase-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(2,6,23,0.38);
+      padding: 14px;
+    }
+
+    .phase-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .phase-step.active .phase-icon {
+      background: linear-gradient(135deg, #22d3ee, #60a5fa);
+      color: #001018;
+      animation: pulse 1.3s infinite;
+    }
+
+    .phase-step.done .phase-icon {
+      background: linear-gradient(135deg, #34d399, #22c55e);
+      color: #04110b;
+    }
+
+    .phase-step.active { border-color: rgba(34,211,238,0.22); background: rgba(34,211,238,0.08); }
+    .phase-step.done { border-color: rgba(52,211,153,0.22); background: rgba(52,211,153,0.08); }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(34,211,238,0.28); }
+      70% { box-shadow: 0 0 0 12px rgba(34,211,238,0); }
+      100% { box-shadow: 0 0 0 0 rgba(34,211,238,0); }
+    }
+
+    .outcomes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .outcome {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      padding: 16px;
+      background: rgba(2,6,23,0.4);
+    }
+
+    .outcome .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      opacity: 0.78;
+    }
+
+    .outcome .value {
+      margin-top: 10px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .progress-group { margin-top: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #d8e3f1;
+      margin-bottom: 6px;
+    }
+
+    .bar {
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #22d3ee, #60a5fa, #a78bfa);
+      transition: width 0.6s ease;
+    }
+
+    .message-list { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
+
+    .message {
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      padding: 18px;
+    }
+
+    .message-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .message h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .message small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .message p {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+      margin: 14px 0 16px;
+    }
+
+    .log-wrap {
+      margin-top: 22px;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(2,6,23,0.55);
+    }
+
+    .log-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .log-list {
+      max-height: 440px;
+      overflow: auto;
+    }
+
+    .log-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 14px;
+    }
+
+    .log-time {
+      width: 86px;
+      flex-shrink: 0;
+      color: #64748b;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-weight: 700;
+    }
+
+    .log-text { color: #d9e5f3; }
+
+    .error-banner {
+      border: 1px solid rgba(251,113,133,0.18);
+      background: rgba(251,113,133,0.09);
+      color: #fecdd3;
+      padding: 14px 16px;
+      border-radius: 18px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .loading-screen {
+      display: none;
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .muted { color: var(--muted); }
+
+    /* ===== POPUP / MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(6px);
+      z-index: 9998;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.visible {
+      display: flex;
+    }
+    .modal-box {
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 28px 32px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+      text-align: center;
+    }
+    .modal-box h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+    .modal-box p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 20px;
+    }
+    .modal-box input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(2,6,23,0.6);
+      color: white;
+      font-size: 15px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .modal-box input:focus {
+      border-color: var(--cyan);
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .modal-error {
+      color: var(--rose);
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    @media (max-width: 1180px) {
+      .layout, .split, .split-half { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .container { padding: 22px 14px 30px; }
+      .status-chips, .metrics, .outcomes { grid-template-columns: 1fr; }
+      .message-top, .header { align-items: stretch; }
+      .log-item { flex-direction: column; align-items: flex-start; }
+      .log-time { width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== POPUP MODALE PER PASSWORD ===== -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-box">
+      <h3 id="modal-title">Conferma azione</h3>
+      <p id="modal-desc">Inserisci la password admin per procedere.</p>
+      <div id="modal-error" class="modal-error">Password errata. Riprova.</div>
+      <input id="modal-password" type="password" placeholder="Password admin..." autocomplete="off" />
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="closeModal()">Annulla</button>
+        <button class="btn-primary" id="modal-confirm-btn" onclick="confirmModal()">Conferma</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div>
+        <div class="eyebrow">Secure Vault Authentication Demo</div>
+        <h1>IoT Device ↔ Server Dashboard</h1>
+        <p class="subtitle">
+          Dashboard HTML integrabile con backend Python/Flask e database <strong>.db</strong>.
+          Mostra in tempo reale stato del device ESP8266, sessione, messaggi M1–M4,
+          aggiornamento del secure vault e log tecnici del protocollo.
+        </p>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:12px;">
+        <a href="/admin/logout" class="logout-btn">Logout</a>
+      <div class="status-chips">
+        <div id="chip-server" class="chip accent-rose">
+          <div class="chip-label">Server</div>
+          <div id="chip-server-value" class="chip-value">Offline</div>
+        </div>
+        <div id="chip-device" class="chip accent-rose">
+          <div class="chip-label">Device</div>
+          <div id="chip-device-value" class="chip-value">Offline</div>
+        </div>
+        <div id="chip-session" class="chip accent-amber">
+          <div class="chip-label">Sessione</div>
+          <div id="chip-session-value" class="chip-value">Idle</div>
+        </div>
+        <div id="chip-vault" class="chip accent-amber">
+          <div class="chip-label">Vault</div>
+          <div id="chip-vault-value" class="chip-value">Invariato</div>
+        </div>
+      </div>
+    </div>
+      
+    </header>
+
+    <div id="error-banner" class="error-banner"></div>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="card">
+          <div class="section-kicker">Riquadro 1</div>
+          <h2 class="section-title">Controlli</h2>
+          <p class="section-text">
+            Avvia la demo, resetta lo stato del protocollo e monitora rapidamente lo stato del server,
+            del database e del device.
+          </p>
+
+          <div class="split">
+            <div class="inner-card">
+              <div class="button-row">
+                <button id="start-btn" class="btn-primary">Avvia demo</button>
+                <button id="reset-btn" class="btn-secondary">Reset stato</button>
+                <button id="refresh-btn" class="btn-success">Aggiorna dashboard</button>
+              </div>
+
+              <div class="metrics">
+                <div class="metric">
+                  <div class="label">Device ID</div>
+                  <div id="metric-device-id" class="value">—</div>
+                  <div id="metric-device-sub" class="sub">In attesa</div>
+                </div>
+                <div class="metric">
+                  <div class="label">Session ID</div>
+                  <div id="metric-session-id" class="value">—</div>
+                  <div id="metric-session-sub" class="sub">Nessuna sessione</div>
+                </div>
+                <div class="metric">
+                  <div class="label">Polling</div>
+                  <div id="metric-polling" class="value">—</div>
+                  <div class="sub">Configurato sul device</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inner-card">
+              <div class="section-kicker" style="margin-bottom: 12px;">Stato rapido</div>
+              <div class="info-list">
+                <div class="info-row">
+                  <div class="info-left"><span id="dot-backend" class="dot" style="color: var(--rose); background: currentColor;"></span><span id="backend-name">Flask API</span></div>
+                  <strong id="backend-status">Offline</strong>
+                </div>
+                <div class="info-row">
+                  <div class="info-left"><span id="dot-db" class="dot" style="color: var(--rose); background: currentColor;"></span><span id="database-name">SQLite .db</span></div>
+                  <strong id="database-status">Offline</strong>
+                </div>
+                <div class="info-row">
+                  <div class="info-left"><span class="dot" style="color: var(--amber); background: currentColor;"></span><span>Ultimo heartbeat</span></div>
+                  <strong id="heartbeat-status">—</strong>
+                </div>
+                <div class="info-row">
+                  <div class="info-left"><span class="dot" style="color: var(--violet); background: currentColor;"></span><span>Comando pending</span></div>
+                  <strong id="pending-status">No</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-kicker">Riquadro 2</div>
+          <h2 class="section-title">Stato protocollo</h2>
+          <p class="section-text">
+            Visualizza la fase corrente dell'autenticazione, l'esito della mutual authentication,
+            la generazione della session key e l'evoluzione del vault.
+          </p>
+
+          <div class="split-half">
+            <div class="inner-card">
+              <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+                <strong style="font-size:18px;">Fase corrente</strong>
+                <span id="phase-badge" class="phase-badge accent-amber">In attesa</span>
+              </div>
+
+              <div id="phase-list" class="phase-list"></div>
+            </div>
+
+            <div>
+              <div class="outcomes">
+                <div id="outcome-device" class="outcome accent-amber">
+                  <div class="label">Autenticazione device</div>
+                  <div class="value" id="outcome-device-value">Pending</div>
+                </div>
+                <div id="outcome-server" class="outcome accent-amber">
+                  <div class="label">Autenticazione server</div>
+                  <div class="value" id="outcome-server-value">Pending</div>
+                </div>
+                <div id="outcome-key" class="outcome">
+                  <div class="label">Session key</div>
+                  <div class="value" id="outcome-key-value">Non generata</div>
+                </div>
+                <div id="outcome-vault" class="outcome accent-violet">
+                  <div class="label">Vault</div>
+                  <div class="value" id="outcome-vault-value">Invariato</div>
+                  <div class="subvalue" id="outcome-vault-hash">hash: —</div>
+                </div>
+              </div>
+
+              <div class="inner-card" style="margin-top:18px;">
+                <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+                  <div>
+                    <div class="section-kicker" style="margin-bottom:6px;">Session health</div>
+                    <strong style="font-size:18px;">Integrità dello scambio</strong>
+                  </div>
+                  <span id="health-badge" class="mini-badge">Ready</span>
+                </div>
+                <div style="margin-top:12px;">
+                  <div class="progress-top">
+                    <span>Scadenza sessione</span>
+                    <strong id="session-expiry-text">—</strong>
+                  </div>
+                  <div class="bar">
+                    <div id="session-expiry-bar" class="bar-fill" style="width:0%;"></div>
+                  </div>
+                </div>
+
+                <div class="progress-group">
+                  <div>
+                    <div class="progress-top"><span>Connessione device → server</span><strong id="progress-1-text">0%</strong></div>
+                    <div class="bar"><div id="progress-1" class="bar-fill"></div></div>
+                  </div>
+                  <div>
+                    <div class="progress-top"><span>Preparazione challenge</span><strong id="progress-2-text">0%</strong></div>
+                    <div class="bar"><div id="progress-2" class="bar-fill"></div></div>
+                  </div>
+                  <div>
+                    <div class="progress-top"><span>Verifica crittografica</span><strong id="progress-3-text">0%</strong></div>
+                    <div class="bar"><div id="progress-3" class="bar-fill"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card">
+          <div class="section-kicker">Riquadro 3</div>
+          <h2 class="section-title">Timeline messaggi</h2>
+          <p class="section-text">
+            Stato reale dei messaggi M1, M2, M3, M4 e dell'update del vault.
+          </p>
+
+          <div id="message-list" class="message-list"></div>
+        </section>
+        <section class="card">
+          <div class="section-kicker">Riquadro 4</div>
+          <h2 class="section-title">Dati applicativi del device</h2>
+          <p class="section-text">
+            Dati reali scambiati tra ESP8266 e server <em>dopo</em> l'autenticazione.
+          </p>
+
+          <div class="split" style="margin-top:22px;">
+            <div class="inner-card">
+              <div class="metrics" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+                <div class="metric">
+                  <div class="label">Temperatura</div>
+                  <div id="sensor-temperature" class="value">—</div>
+                  <div class="sub">Ultimo valore ricevuto</div>
+                </div>
+                <div class="metric">
+                  <div class="label">Umidità</div>
+                  <div id="sensor-humidity" class="value">—</div>
+                  <div class="sub">Ultimo valore ricevuto</div>
+                </div>
+                <div class="metric">
+                  <div class="label">Batteria</div>
+                  <div id="sensor-battery" class="value">—</div>
+                  <div class="sub">Stato alimentazione</div>
+                </div>
+                <div class="metric">
+                  <div class="label">Ultimo invio</div>
+                  <div id="sensor-last-sent" class="value">—</div>
+                  <div class="sub">Timestamp payload</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inner-card">
+              <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+                <strong style="font-size:18px;">Ultimo payload applicativo</strong>
+                <span id="sensor-payload-badge" class="mini-badge accent-cyan">Dati device</span>
+              </div>
+
+              <pre id="sensor-payload" style="margin:0; white-space:pre-wrap; word-break:break-word; font-size:13px; line-height:1.7; color:#dbeafe; background:rgba(2,6,23,0.45); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:14px; min-height:140px;">Nessun payload disponibile.</pre>
+            </div>
+          </div>
+
+          <div class="log-wrap" style="margin-top:18px;">
+            <div class="log-head">Storico dati sensore</div>
+            <div id="sensor-history-list" class="log-list"></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-kicker">Riquadro 5</div>
+          <h2 class="section-title">Log tecnico</h2>
+          <p class="section-text">
+            Eventi del backend, heartbeat del device, messaggi di debug e possibili errori.
+          </p>
+
+          <div class="log-wrap">
+            <div class="log-head">Event stream</div>
+            <div id="loading-screen" class="loading-screen">Caricamento log in corso...</div>
+            <div id="log-list" class="log-list"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "";
+
+    /* ===== MODAL / POPUP LOGIC ===== */
+    let _modalResolve = null;
+    let _modalAction = null;
+
+    function openModal(title, desc) {
+      document.getElementById("modal-title").textContent = title;
+      document.getElementById("modal-desc").textContent = desc;
+      document.getElementById("modal-password").value = "";
+      document.getElementById("modal-error").style.display = "none";
+      document.getElementById("modal-overlay").classList.add("visible");
+      setTimeout(() => document.getElementById("modal-password").focus(), 100);
+      return new Promise((resolve) => { _modalResolve = resolve; });
+    }
+
+    function closeModal() {
+      document.getElementById("modal-overlay").classList.remove("visible");
+      if (_modalResolve) { _modalResolve(null); _modalResolve = null; }
+    }
+
+    function confirmModal() {
+      const pw = document.getElementById("modal-password").value;
+      if (!pw) {
+        document.getElementById("modal-error").textContent = "Inserisci la password.";
+        document.getElementById("modal-error").style.display = "block";
+        return;
+      }
+      document.getElementById("modal-overlay").classList.remove("visible");
+      if (_modalResolve) { _modalResolve(pw); _modalResolve = null; }
+    }
+
+    // Enter key confirms
+    document.getElementById("modal-password").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") confirmModal();
+    });
+
+    /* ===== DEFAULTS ===== */
+    const defaultStatus = {
+      server_online: false,
+      database_online: false,
+      device_online: false,
+      device_id: "—",
+      session_id: "—",
+      polling_interval_seconds: null,
+      pending_command: false,
+      last_heartbeat_seconds_ago: null,
+      protocol_phase: "idle",
+      auth_device_status: "pending",
+      auth_server_status: "pending",
+      session_key_generated: false,
+      vault_status: "unchanged",
+      vault_version: null,
+      last_auth_result: "none"
+    };
+
+    const defaultMetrics = {
+      backend_name: "Flask API",
+      database_name: "SQLite .db"
+    };
+
+    const defaultSensorData = {
+      temperature: null,
+      humidity: null,
+      battery: null,
+      last_sent_at: null,
+      last_payload: null,
+      history: []
+    };
+
+    const defaultTimeline = [
+      { key: "M1", title: "M1 — Device → Server", subtitle: "DeviceID || SessionID", status: "waiting", percent: 0, detail: "Il device invierà il messaggio iniziale appena riceverà il comando di avvio dal server." },
+      { key: "M2", title: "M2 — Server → Device", subtitle: "{C1, r1}", status: "waiting", percent: 0, detail: "Il server genera C1 e r1 dopo aver ricevuto M1 e aver caricato il vault del device dal database .db." },
+      { key: "M3", title: "M3 — Device → Server", subtitle: "Enc(k1, r1 || t1 || {C2, r2})", status: "waiting", percent: 0, detail: "Il device costruisce k1 dal secure vault, cifra il payload e invia la sua challenge al server." },
+      { key: "M4", title: "M4 — Server → Device", subtitle: "Enc(k2 XOR t1, r2 || t2)", status: "waiting", percent: 0, detail: "Il server verifica il device, risponde con M4 e completa la mutua autenticazione." },
+      { key: "vault_update", title: "Update Vault", subtitle: "HMAC(current_vault, exchanged_data)", status: "waiting", percent: 0, detail: "Dopo il successo, device e server aggiornano il vault in modo sincronizzato." }
+    ];
+
+    const phaseSteps = [
+      ["polling", "1. Device polling", "L'ESP8266 interroga il server per verificare se è stata richiesta una nuova autenticazione."],
+      ["m1_sent", "2. Invio M1", "Il device invia Device ID e Session ID al server per iniziare l'autenticazione."],
+      ["m2_sent", "3. Ricezione M2", "Il server genera C1 e r1 e li restituisce al device."],
+      ["m3_sent", "4. Invio M3", "Il device calcola k1, genera t1, C2, r2 e invia il payload cifrato."],
+      ["m4_sent", "5. Invio M4", "Il server verifica M3, calcola k2, genera t2 e risponde al device."],
+      ["vault_updated", "6. Vault update", "Dopo il successo, entrambi aggiornano il secure vault con HMAC + XOR."]
+    ];
+
+    let dashboardData = {
+      status: { ...defaultStatus },
+      metrics: { ...defaultMetrics },
+      timeline: [...defaultTimeline],
+      logs: [],
+      sensor_data: { ...defaultSensorData }
+    };
+
+    async function fetchDashboard() {
+      setLoading(true);
+      hideError();
+      try {
+        const res = await fetch(API_BASE + "/ui/dashboard");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        dashboardData = {
+          status: { ...defaultStatus, ...(data.status || {}) },
+          metrics: { ...defaultMetrics, ...(data.metrics || {}) },
+          timeline: Array.isArray(data.timeline) && data.timeline.length ? data.timeline : [...defaultTimeline],
+          logs: Array.isArray(data.logs) ? data.logs : [],
+          sensor_data: { ...defaultSensorData, ...(data.sensor_data || {}) }
+        };
+        renderAll();
+      } catch (err) {
+        showError("Impossibile caricare i dati dal backend Flask: " + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function postActionWithAuth(path, button, title, desc, bodyJson) {
+      const password = await openModal(title, desc);
+      if (!password) return; // annullato
+
+      const original = button.textContent;
+      button.disabled = true;
+      button.textContent = "Attendi...";
+      hideError();
+      try {
+        const opts = {
+          method: "POST",
+          headers: {
+            "X-Admin-Key": password,
+            "Content-Type": "application/json"
+          }
+        };
+        if (bodyJson) opts.body = JSON.stringify(bodyJson);
+        const res = await fetch(API_BASE + path, opts);
+        if (res.status === 403) {
+          showError("Password errata! Accesso negato.");
+          return;
+        }
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        await fetchDashboard();
+      } catch (err) {
+        showError("Operazione non riuscita: " + err.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = original;
+      }
+    }
+
+    function renderAll() {
+      renderHeader();
+      renderMetrics();
+      renderPhase();
+      renderOutcomes();
+      renderProgress();
+      renderMessages();
+      renderLogs();
+      renderSensorData();
+      updateSessionExpiry();
+    }
+
+    function renderHeader() {
+      const s = dashboardData.status;
+      setChip("server", s.server_online ? "Online" : "Offline", s.server_online ? "accent-emerald" : "accent-rose");
+      setChip("device", s.device_online ? "Online" : "Offline", s.device_online ? "accent-cyan" : "accent-rose");
+      const phase = phaseLabel(s.protocol_phase);
+      setChip("session", phase.short, phase.accent);
+      setChip("vault", vaultStatusLabel(s.vault_status), s.vault_status === "updated" ? "accent-violet" : "accent-amber");
+
+      document.getElementById("backend-name").textContent = dashboardData.metrics.backend_name || "Flask API";
+      document.getElementById("database-name").textContent = dashboardData.metrics.database_name || "SQLite .db";
+      setDot("dot-backend", s.server_online ? "var(--green)" : "var(--rose)");
+      setDot("dot-db", s.database_online ? "var(--cyan)" : "var(--rose)");
+      document.getElementById("backend-status").textContent = s.server_online ? "Attivo" : "Offline";
+      document.getElementById("database-status").textContent = s.database_online ? "Connesso" : "Offline";
+      document.getElementById("heartbeat-status").textContent = formatHeartbeat(s.last_heartbeat_seconds_ago);
+      document.getElementById("pending-status").textContent = s.pending_command ? "Sì" : "No";
+    }
+
+    function renderMetrics() {
+      const s = dashboardData.status;
+      document.getElementById("metric-device-id").textContent = s.device_id || "—";
+      document.getElementById("metric-device-sub").textContent = s.device_online ? "Registrato e raggiungibile" : "In attesa";
+      document.getElementById("metric-session-id").textContent = s.session_id || "—";
+      document.getElementById("metric-session-sub").textContent = phaseLabel(s.protocol_phase).long;
+      document.getElementById("metric-polling").textContent = s.polling_interval_seconds ? s.polling_interval_seconds + "s" : "—";
+    }
+
+    function renderPhase() {
+      const phaseContainer = document.getElementById("phase-list");
+      const s = dashboardData.status;
+      const phase = phaseLabel(s.protocol_phase);
+      const badge = document.getElementById("phase-badge");
+      badge.textContent = phase.long;
+      badge.className = "phase-badge " + phase.accent;
+
+      phaseContainer.innerHTML = "";
+      phaseSteps.forEach(function(step) {
+        var key = step[0], title = step[1], text = step[2];
+        var div = document.createElement("div");
+        var active = s.protocol_phase === key && !(key === "vault_updated" && s.last_auth_result === "success");
+        var done = hasPassed(s.protocol_phase, key) || (key === "vault_updated" && s.protocol_phase === "vault_updated") || (key === "vault_updated" && s.last_auth_result === "success");
+        div.className = "phase-step" + (active ? " active" : "") + (done ? " done" : "");
+        div.innerHTML = '<div class="phase-icon">' + (done ? "✓" : active ? "…" : "•") + '</div><div><div style="font-weight:800; margin-bottom:4px;">' + title + '</div><div class="muted" style="font-size:14px; line-height:1.6;">' + text + '</div></div>';
+        phaseContainer.appendChild(div);
+      });
+    }
+
+    function renderOutcomes() {
+      const s = dashboardData.status;
+      setOutcome("device", authLabel(s.auth_device_status), toneFromAuth(s.auth_device_status));
+      setOutcome("server", authLabel(s.auth_server_status), toneFromAuth(s.auth_server_status));
+      document.getElementById("outcome-key-value").textContent = s.session_key_generated ? "Generata" : "Non generata";
+      document.getElementById("outcome-vault-value").textContent = vaultStatusLabel(s.vault_status) + (s.vault_version ? " · v" + s.vault_version : "");
+      document.getElementById("outcome-vault-hash").textContent = "hash: " + (s.vault_hash || "—");
+
+      const health = document.getElementById("health-badge");
+      if (s.last_auth_result === "success") {
+        health.textContent = "Healthy";
+        health.className = "mini-badge accent-emerald";
+      } else if (s.last_auth_result === "failure") {
+        health.textContent = "Error";
+        health.className = "mini-badge accent-rose";
+      } else {
+        health.textContent = "Ready";
+        health.className = "mini-badge";
+      }
+    }
+
+    function renderProgress() {
+      const s = dashboardData.status;
+      const values = progressFromPhase(s.protocol_phase);
+      [1,2,3].forEach(function(n, idx) {
+        document.getElementById("progress-" + n).style.width = values[idx] + "%";
+        document.getElementById("progress-" + n + "-text").textContent = values[idx] + "%";
+      });
+    }
+
+    function renderMessages() {
+      const list = document.getElementById("message-list");
+      list.innerHTML = "";
+      dashboardData.timeline.forEach(function(item) {
+        const div = document.createElement("div");
+        div.className = "message";
+        const status = messageBadge(item.status);
+        div.innerHTML = '<div class="message-top"><div><h3>' + escapeHtml(item.title || "Messaggio") + '</h3><small>' + escapeHtml(item.subtitle || "") + '</small></div><span class="mini-badge ' + status.accent + '">' + (status.dot ? '<span style="width:8px;height:8px;border-radius:999px;background:currentColor;display:inline-block;animation:pulse 1.2s infinite;"></span>' : "") + status.label + '</span></div><p>' + escapeHtml(item.detail || "") + '</p><div><div class="progress-top"><span>Stato messaggio</span><strong>' + Number(item.percent || 0) + '%</strong></div><div class="bar"><div class="bar-fill" style="width:' + Number(item.percent || 0) + '%; ' + status.barStyle + '"></div></div></div>';
+        list.appendChild(div);
+      });
+    }
+
+    function renderLogs() {
+      const list = document.getElementById("log-list");
+      list.innerHTML = "";
+      if (!dashboardData.logs.length) {
+        list.innerHTML = '<div class="log-item"><div class="log-text muted">Nessun log disponibile.</div></div>';
+        return;
+      }
+      dashboardData.logs.forEach(function(log) {
+        const badge = logBadge(log.level || "INFO");
+        const row = document.createElement("div");
+        row.className = "log-item";
+        row.innerHTML = '<div class="log-time">' + escapeHtml(log.timestamp || "—") + '</div><span class="mini-badge ' + badge + '">' + escapeHtml(log.level || "INFO") + '</span><div class="log-text">' + escapeHtml(log.text || "Evento senza descrizione") + '</div>';
+        list.appendChild(row);
+      });
+    }
+
+    function renderSensorData() {
+      const s = dashboardData.sensor_data || defaultSensorData;
+      document.getElementById("sensor-temperature").textContent = formatSensorValue(s.temperature, "°C");
+      document.getElementById("sensor-humidity").textContent = formatSensorValue(s.humidity, "%");
+      document.getElementById("sensor-battery").textContent = formatSensorValue(s.battery, "V");
+      document.getElementById("sensor-last-sent").textContent = s.last_sent_at || "—";
+
+      const payloadEl = document.getElementById("sensor-payload");
+      if (s.last_payload === null || s.last_payload === undefined) {
+        payloadEl.textContent = "Nessun payload disponibile.";
+      } else if (typeof s.last_payload === "string") {
+        payloadEl.textContent = s.last_payload;
+      } else {
+        payloadEl.textContent = JSON.stringify(s.last_payload, null, 2);
+      }
+
+      const historyList = document.getElementById("sensor-history-list");
+      historyList.innerHTML = "";
+      if (!Array.isArray(s.history) || !s.history.length) {
+        historyList.innerHTML = '<div class="log-item"><div class="log-text muted">Nessun dato sensore disponibile.</div></div>';
+        return;
+      }
+      s.history.forEach(function(entry) {
+        const row = document.createElement("div");
+        row.className = "log-item";
+        row.innerHTML = '<div class="log-time">' + escapeHtml(entry.timestamp || "—") + '</div><span class="mini-badge accent-cyan">DATA</span><div class="log-text">Temperatura: <strong>' + escapeHtml(formatSensorValue(entry.temperature, "°C")) + '</strong>' + (entry.humidity !== undefined && entry.humidity !== null ? ' · Umidità: <strong>' + escapeHtml(formatSensorValue(entry.humidity, "%")) + '</strong>' : "") + (entry.battery !== undefined && entry.battery !== null ? ' · Batteria: <strong>' + escapeHtml(formatSensorValue(entry.battery, "V")) + '</strong>' : "") + '</div>';
+        historyList.appendChild(row);
+      });
+    }
+
+    function formatSensorValue(value, suffix) {
+      if (value === null || value === undefined || value === "") return "—";
+      return value + (suffix || "");
+    }
+
+    function setChip(name, value, accentClass) {
+      document.getElementById("chip-" + name).className = "chip " + accentClass;
+      document.getElementById("chip-" + name + "-value").textContent = value;
+    }
+
+    function setOutcome(name, value, accentClass) {
+      document.getElementById("outcome-" + name).className = "outcome " + accentClass;
+      document.getElementById("outcome-" + name + "-value").textContent = value;
+    }
+
+    function setDot(id, color) {
+      var el = document.getElementById(id);
+      el.style.color = color;
+      el.style.background = "currentColor";
+    }
+
+    function authLabel(status) {
+      return ({ pending: "Pending", success: "Riuscita", failed: "Fallita" })[status] || "Pending";
+    }
+
+    function toneFromAuth(status) {
+      return ({ pending: "accent-amber", success: "accent-emerald", failed: "accent-rose" })[status] || "";
+    }
+
+    function vaultStatusLabel(status) {
+      return ({ unchanged: "Invariato", updating: "In aggiornamento", updated: "Aggiornato", error: "Errore" })[status] || "Invariato";
+    }
+
+    function phaseLabel(phase) {
+      return {
+        idle: { short: "Idle", long: "In attesa", accent: "accent-amber" },
+        polling: { short: "Polling", long: "Polling device", accent: "accent-cyan" },
+        m1_sent: { short: "M1", long: "M1 inviato", accent: "accent-cyan" },
+        m2_sent: { short: "M2", long: "M2 inviato", accent: "accent-cyan" },
+        m3_sent: { short: "M3", long: "M3 inviato", accent: "accent-cyan" },
+        m4_sent: { short: "M4", long: "M4 inviato", accent: "accent-cyan" },
+        authenticated: { short: "OK", long: "Autenticato", accent: "accent-emerald" },
+        vault_updated: { short: "Vault", long: "Vault aggiornato", accent: "accent-violet" },
+        failed: { short: "Errore", long: "Autenticazione fallita", accent: "accent-rose" }
+      }[phase] || { short: "Idle", long: "In attesa", accent: "accent-amber" };
+    }
+
+    function messageBadge(status) {
+      return {
+        waiting: { label: "In attesa", accent: "", dot: false, barStyle: "background: rgba(255,255,255,0.1);" },
+        "in-progress": { label: "In caricamento", accent: "accent-cyan", dot: true, barStyle: "background: linear-gradient(90deg, #22d3ee, #60a5fa, #a78bfa);" },
+        done: { label: "Completato", accent: "accent-emerald", dot: false, barStyle: "background: linear-gradient(90deg, #34d399, #22c55e);" },
+        error: { label: "Errore", accent: "accent-rose", dot: false, barStyle: "background: linear-gradient(90deg, #fb7185, #fb923c);" }
+      }[status] || { label: "In attesa", accent: "", dot: false, barStyle: "background: rgba(255,255,255,0.1);" };
+    }
+
+    function logBadge(level) {
+      return { INFO: "accent-cyan", DEBUG: "accent-violet", WAIT: "accent-amber", PING: "accent-emerald", READY: "accent-cyan", ERROR: "accent-rose" }[level] || "";
+    }
+
+    function formatHeartbeat(seconds) {
+      if (seconds === null || seconds === undefined) return "—";
+      if (seconds < 1) return "adesso";
+      if (seconds < 60) return seconds + "s fa";
+      return Math.floor(seconds / 60) + " min fa";
+    }
+
+    function updateSessionExpiry() {
+      var s = dashboardData.status || {};
+      var textEl = document.getElementById("session-expiry-text");
+      var barEl = document.getElementById("session-expiry-bar");
+      if (!textEl || !barEl) return;
+      if (!s.session_completed_at || !s.session_timeout_seconds || s.last_auth_result !== "success") {
+        textEl.textContent = "—";
+        barEl.style.width = "0%";
+        return;
+      }
+      var completed = new Date(s.session_completed_at.replace(" ", "T"));
+      var now = new Date();
+      var elapsed = Math.floor((now - completed) / 1000);
+      var total = s.session_timeout_seconds;
+      var remaining = Math.max(0, total - elapsed);
+      var percent = Math.max(0, (remaining / total) * 100);
+      textEl.textContent = remaining > 0 ? remaining + "s" : "Scaduta";
+      barEl.style.width = percent + "%";
+      barEl.style.background = remaining <= 0 ? "linear-gradient(90deg, #fb7185, #fb923c)" : "linear-gradient(90deg, #22d3ee, #60a5fa, #a78bfa)";
+    }
+
+    function hasPassed(current, target) {
+      var order = ["idle", "polling", "m1_sent", "m2_sent", "m3_sent", "m4_sent", "authenticated", "vault_updated"];
+      return order.indexOf(current) > order.indexOf(target);
+    }
+
+    function progressFromPhase(phase) {
+      return { idle: [0,0,0], polling: [20,0,0], m1_sent: [40,10,0], m2_sent: [65,40,10], m3_sent: [80,70,40], m4_sent: [90,85,75], authenticated: [100,100,100], vault_updated: [100,100,100], failed: [100,40,20] }[phase] || [0,0,0];
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function showError(text) {
+      var el = document.getElementById("error-banner");
+      el.textContent = text;
+      el.style.display = "block";
+    }
+
+    function hideError() {
+      var el = document.getElementById("error-banner");
+      el.style.display = "none";
+      el.textContent = "";
+    }
+
+    function setLoading(isLoading) {
+      document.getElementById("loading-screen").style.display = isLoading ? "block" : "none";
+    }
+
+    /* ===== BUTTON EVENT LISTENERS ===== */
+    document.getElementById("start-btn").addEventListener("click", function () {
+      postActionWithAuth(
+        "/ui/start-demo",
+        this,
+        "Avvia Demo",
+        "Inserisci la password admin per avviare la demo di autenticazione.",
+        { device_id: "ESP8266-01" }
+      );
+    });
+
+    document.getElementById("reset-btn").addEventListener("click", function () {
+      postActionWithAuth(
+        "/ui/reset",
+        this,
+        "Reset Stato",
+        "Inserisci la password admin per resettare lo stato del protocollo.",
+        null
+      );
+    });
+
+    document.getElementById("refresh-btn").addEventListener("click", function () {
+      fetchDashboard();
+    });
+
+    /* ===== INIT ===== */
+    fetchDashboard();
+    setInterval(fetchDashboard, 3000);
+  </script>
+</body>
+</html>
