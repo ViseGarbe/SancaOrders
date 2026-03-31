@@ -856,7 +856,8 @@
       document.getElementById("modal-desc").textContent = desc;
       document.getElementById("modal-password").value = "";
       document.getElementById("modal-error").style.display = "none";
-      document.getElementById("modal-overlay").classList.add("visible");
+      // Alvise
+      document.getElementById("modal-overlay").classList.add("hidden");
       setTimeout(() => document.getElementById("modal-password").focus(), 100);
       return new Promise((resolve) => { _modalResolve = resolve; });
     }
@@ -963,8 +964,8 @@
     }
 
     async function postActionWithAuth(path, button, title, desc, bodyJson) {
-      const password = await openModal(title, desc);
-      if (!password) return; // annullato
+      //const password = await openModal(title, desc);
+      //if (!password) return; // annullato
 
       const original = button.textContent;
       button.disabled = true;
@@ -974,7 +975,7 @@
         const opts = {
           method: "POST",
           headers: {
-            "X-Admin-Key": password,
+            //"X-Admin-Key": password,
             "Content-Type": "application/json"
           }
         };
